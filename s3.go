@@ -12,10 +12,16 @@ import (
 	"github.com/minio/minio-go/v6"
 )
 
+const (
+	ContentTypeJSON = "application/json"
+	ContentTypePDF = "application/pdf"
+	ContentTypePNG = "image/png"
+	ContentTypeJPEG = "image/jpeg"
+)
+
 type Service interface {
 	AddLifeCycleRule(ruleId, folderPath string, daysToExpiry int) error
-	UploadJSONFile(path string, data io.Reader) error
-	UploadPDFFile(path string, data io.Reader) error
+	UploadFile(path, contentType string, data io.Reader) error
 	GetFileUrl(path string, expiration time.Duration) (*url.URL, error)
 	UploadJSONFileWithLink(path string, data io.Reader, linkExpiration time.Duration) (*url.URL, error)
 	DownloadFile(path, localPath string) error
@@ -62,13 +68,8 @@ func (s *service) AddLifeCycleRule(ruleId, folderPath string, daysToExpiry int) 
 	return s.s3Client.SetBucketLifecycle(s.bucketName, lifeCycleString)
 }
 
-func (s *service) UploadJSONFile(path string, data io.Reader) error {
-	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: "application/json"})
-	return err
-}
-
-func (s *service) UploadPDFFile(path string, data io.Reader) error {
-	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: "application/pdf"})
+func (s *service) UploadFile(path, contentType string, data io.Reader) error {
+	_, err := s.s3Client.PutObject(s.bucketName, path, data, -1, minio.PutObjectOptions{ContentType: contentType})
 	return err
 }
 
