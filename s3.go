@@ -138,7 +138,9 @@ func (s *service) DownloadFileBytes(path string) ([]byte, error) {
 
 	_, err = object.Read(buffer)
 	if err != nil {
-		return nil, err
+		if err != io.EOF {
+			return nil, err
+		}
 	}
 	return buffer, nil
 }
