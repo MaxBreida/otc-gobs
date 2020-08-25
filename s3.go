@@ -133,7 +133,10 @@ func (s *service) DownloadFileBytes(path string) ([]byte, error) {
 	}
 	defer object.Close()
 
-	fileInfo, _ := object.Stat()
+	fileInfo, err := object.Stat()
+	if err != nil {
+		return nil, err
+	}
 	buffer := make([]byte, fileInfo.Size)
 
 	_, err = object.Read(buffer)
