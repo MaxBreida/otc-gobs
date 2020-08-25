@@ -14,8 +14,8 @@ import (
 
 const (
 	ContentTypeJSON = "application/json"
-	ContentTypePDF = "application/pdf"
-	ContentTypePNG = "image/png"
+	ContentTypePDF  = "application/pdf"
+	ContentTypePNG  = "image/png"
 	ContentTypeJPEG = "image/jpeg"
 )
 
@@ -26,6 +26,7 @@ type Service interface {
 	UploadJSONFileWithLink(path string, data io.Reader, linkExpiration time.Duration) (*url.URL, error)
 	DownloadFile(path, localPath string) error
 	DownloadDirectory(path, localPath string) error
+	DownloadFileBytes(path string) ([]byte, error)
 	RemoveFile(path string) error
 }
 
@@ -123,6 +124,28 @@ func (s *service) DownloadDirectory(path, localPath string) error {
 
 func (s *service) DownloadFile(path, localPath string) error {
 	return s.s3Client.FGetObject(s.bucketName, path, localPath, minio.GetObjectOptions{})
+}
+
+func (s *service) DownloadFileBytes(path string) ([]byte, error) {
+	object, err := s.s3Client.GetObject(s.bucketName, path, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer object.Close()
+
+	fileInfo, err := object.Stat()
+	if err != nil {
+		return nil, err
+	}
+	buffer := make([]byte, fileInfo.Size)
+
+	_, err = object.Read(buffer)
+	if err != nil {
+		if err != io.EOF {
+			return nil, err
+		}
+	}
+	return buffer, nil
 }
 
 func (s *service) RemoveFile(path string) error {
