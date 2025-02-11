@@ -4,5 +4,5 @@ go 1.13
 
 require (
 	github.com/minio/minio-go/v6 v6.0.44
-	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 )
